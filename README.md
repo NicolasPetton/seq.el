@@ -1,4 +1,4 @@
-# seq.el ![Travis status](https://travis-ci.org/NicolasPetton/amd-mode.el.svg)
+# seq.el [![Build Status](https://secure.travis-ci.org/NicolasPetton/seq.el.png)](http://travis-ci.org/NicolasPetton/seq.el)
 
 ## Summary
 
