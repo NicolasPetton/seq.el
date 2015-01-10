@@ -1,4 +1,4 @@
-# sequences
+# seq.el ![Travis status](https://travis-ci.org/NicolasPetton/amd-mode.el.svg)
 
 ## Summary
 
