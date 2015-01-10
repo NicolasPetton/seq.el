@@ -5,6 +5,7 @@
 ;; Author: Nicolas Petton <petton.nicolas@gmail.com>
 ;; Keywords: sequences
 ;; Version: 1.0
+;; Package: seq
 
 ;; Maintainer: emacs-devel@gnu.org
 
