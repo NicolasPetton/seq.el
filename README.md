@@ -16,4 +16,15 @@ their first argument.
 
 All functions are tested in `test/seq-tests.el`
 
+# Contributing
+
+Fetch dependencies:
+
+    $ cd /path/to/seq.el
+    $ cask
+
+Run the tests:
+
+    $ ./run-tests.sh
+
 [COPYING]: ./COPYING
