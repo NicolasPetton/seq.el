@@ -167,6 +167,22 @@ seq.el provides the following functions:
   may be one of the following symbols: `vector`, `list` or
   `string`.
 
+- `seq-mapcat` function sequence &optional type
+   This function returns the result of applying `seq-concatenate` to
+   the result of applying `function` to each element of `sequence`.  The
+   result is a sequence of type `type`, or a list if `type` is nil.
+
+-  `seq-partition` sequence n
+   This function returns a list of the elements of `sequence` grouped
+   into sub-sequences of length `n`.  The last sequence may contain less
+   elements than `n`.  `n` must be an integer.  If `n` is a negative integer
+   or 0, nil is returned.
+
+- `seq-group-by` function sequence
+   This function separates the elements of `sequence` into an alist
+   whose keys are the result of applying `function` to each element of
+   `sequence`.  Keys are compared using `equal`.
+
 - `seq-doseq` (var seq [result]) body...
   This macro is like `dolist`, except that `seq` can be a list,
   vector or string.
