@@ -183,6 +183,14 @@ seq.el provides the following functions:
    whose keys are the result of applying `function` to each element of
    `sequence`.  Keys are compared using `equal`.
 
+- `seq-intersection` seq1 seq2 &optional testfn
+   Return a list of the elements that appear in both `seq1` and `seq2`.
+   Equality is defined by TESTFN if non-nil or by `equal` if nil.
+
+- `seq-difference` seq1 seq2 &optional testfn
+   Return a list of the elements that appear in both `seq1` but not in `seq2`.
+   Equality is defined by TESTFN if non-nil or by `equal` if nil.
+
 - `seq-doseq` (var seq [result]) body...
   This macro is like `dolist`, except that `seq` can be a list,
   vector or string.
