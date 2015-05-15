@@ -197,6 +197,11 @@ seq.el provides the following functions:
 
   `seq-doseq` is primarily useful for side-effects.
 
+- `seq-let` args &rest body
+  Bind the variables in ARGS to the elements of SEQ then evaluate BODY.
+  ARGS can also include the `&rest' marker followed by a variable
+  name to be bound to the rest of SEQ.
+
 ## Contributing
 
 Since this library is in Emacs 25, contributors must have signed the
