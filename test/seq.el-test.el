@@ -297,6 +297,11 @@ Evaluate BODY for each created sequence.
       (should (null b))
       (should (null c)))))
 
+(ert-deftest test-seq-min-max ()
+  (with-test-sequences (seq '(4 5 3 2 0 4))
+    (should (= (seq-min seq) 0))
+    (should (= (seq-max seq) 5))))
+
 (ert-deftest test-seq-edit-distance ()
   (with-test-sequences (seq1   '(1 2 3))
     (with-test-sequences (seq2 '(1 4 3))
