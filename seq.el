@@ -42,6 +42,8 @@
 
 ;;; Code:
 
+(eval-when-compile (require 'cl-lib))
+
 (defmacro seq-doseq (spec &rest body)
   "Loop over a sequence.
 Similar to `dolist' but can be applied to lists, strings, and vectors.
@@ -334,6 +336,215 @@ SEQ must be a sequence of numbers or markers."
     "Return the largest element of SEQ.
 SEQ must be a sequence of numbers or markers."
   (apply #'max (seq-into seq 'list)))
+
+(defmacro seq--with-matrix-macros (&rest body)
+  (declare (indent 0) (debug t))
+  `(cl-macrolet ((make-matrix (rows columns &optional init-value)
+                   (list 'apply (list 'quote 'vector)
+                         (list 'cl-loop 'for 'i 'from 1 'to rows
+                               'collect (list 'make-vector columns init-value))))
+                 (mset (matrix row column newelt)
+                   (list 'aset (list 'aref matrix row) column newelt))
+                 (mref (matrix row column)
+                   (list 'aref (list 'aref matrix row) column)))
+     ,@body))
+
+(defun seq-alignment (seq1 seq2 &optional
+                           similarity-fn
+                           gap-penalty
+                           alignment-type
+                           score-only-p
+                           gap-symbol)
+  "Compute an alignment of sequences SEQ1 and SEQ2.
+
+SIMILARITY-FN should be a function. It is called with two
+arguments: One element from SEQ1 and one from SEQ2 and it should
+return a number determining how similar the elements are, where
+higher values mean `more similar'.  The default returns 1 if the
+elements are equal, else -1.
+
+GAP-PENALTY is the penalty for one single gap in the alignment,
+the default is -1.
+
+ALIGNMENT-TYPE may be one of the symbols `prefix', `suffix',
+`infix' or nil.  If it is `prefix' \(resp. `suffix'\), trailing
+\(resp. preceding\) elements in SEQ2 may be ignored; `infix' is
+the combination of both.  The default is nil, which means to
+match the whole sequence.
+
+Return a cons \(SCORE . ALINGMENT\), unless SCORE-ONLY-P is
+non-nil, in which case only SCORE is returned.  SCORE says how
+similar the sequences are and ALINGMENT is a list of \(E1 . E2\),
+where E1 is an element from SEQ1 or GAP-SYMBOL, likewise for E2.
+If one of them is the GAP-SYMBOL, it means there is a gap at this
+position in the respective sequence in the alignment."
+
+  ;; See https://en.wikipedia.org/wiki/Needleman-Wunsch_algorithm
+  (seq--with-matrix-macros
+    (let* ((len1 (length seq1))
+           (len2 (length seq2))
+           (score (make-matrix (1+ len1) (1+ len2)))
+           (prefix-p (memq alignment-type '(prefix infix)))
+           (suffix-p (memq alignment-type '(suffix infix))))
+
+      (unless similarity-fn (setq similarity-fn
+                                  (lambda (a b)
+                                    (if (equal a b) 1 -1))))
+      (unless gap-penalty (setq gap-penalty -1))
+
+      (cl-loop for i from 0 to len1 do
+        (mset score i 0 (* i gap-penalty)))
+      (cl-loop for j from 0 to len2 do
+        (mset score 0 j (if suffix-p 0 (* j gap-penalty))))
+
+      (cl-loop for i from 1 to len1 do
+        (cl-loop for j from 1 to len2 do
+          (let ((max (max
+                      (+ (mref score (1- i) j)
+                         gap-penalty)
+                      (+ (mref score i (1- j))
+                         (if (and prefix-p (= i len1))
+                             0 gap-penalty))
+                      (+ (mref score (1- i) (1- j))
+                         (funcall similarity-fn
+                                  (elt seq1 (1- i))
+                                  (elt seq2 (1- j)))))))
+            (mset score i j max))))
+
+      (if score-only-p
+          (mref score len1 len2)
+        (let ((i len1)
+              (j len2)
+              alignment)
+          (while (or (> i 0)
+                     (> j 0))
+            (cond
+             ((and (> i 0)
+                   (= (mref score i j)
+                      (+ (mref score (1- i) j) gap-penalty)))
+              (cl-decf i)
+              (push (cons (elt seq1 i) gap-symbol) alignment))
+             ((and (> j 0)
+                   (= (mref score i j)
+                      (+ (mref score i (1- j))
+                         (if (or (and (= i 0) suffix-p)
+                                 (and (= i len1) prefix-p))
+                             0
+                           gap-penalty))))
+              (cl-decf j)
+              (push (cons gap-symbol (elt seq2 j)) alignment))
+             (t
+              (cl-assert (and (> i 0) (> j 0)) t)
+              (cl-decf i)
+              (cl-decf j)
+              (push (cons (elt seq1 i)
+                          (elt seq2 j)) alignment))))
+          (cons (mref score len1 len2) alignment))))))
+
+(defun seq-edit-distance (seq1 seq2 &optional
+                               max-distance
+                               allow-transposition
+                               score-only-p
+                               gap-symbol)
+  "Compute the Levenshtein distance of sequence SEQ1 and SEQ2
+
+MAX-DISTANCE should be the maximal expected distance, i.e. if the
+real distance is greater than this value, this function returns
+nil.  Lower values result in better performance. If MAX-DISTANCE
+is nil, the proper distance is always returned.
+
+Also recognize the transposition of elements as one atomic
+operation, if ALLOW-TRANSPOSITION is non-nil.
+
+See `seq-alignment' for the return value of this function and the
+SCORE-ONLY-P and GAP-SYMBOL argument."
+
+  ;; See `Algorithms for Approximate String Matching', E. Ukkonen
+
+  (seq--with-matrix-macros
+   (let* ((len1 (length seq1))
+          (len2 (length seq2))
+          (infinity (+ 1 len2 len1))
+          (p1 1)
+          (p2 (+ len1 len2))
+          (k (or max-distance infinity)))
+
+     (unless (> (abs (- len2 len1)) k)
+       (let* ((dist (make-matrix (1+ len1) (1+ len2) infinity))
+              (p (ceiling (/ (- k (abs (- len2 len1))) 2.0)))
+              (j 0)
+              i i-end (ok-p t))
+
+         (while (and ok-p (<= p1 p2) (<= j len2))
+           (setq ok-p nil)
+           (if (>= len1 len2)
+               (setq i (max 0 (1- p1) (- j p))
+                     i-end (min len1 (+ j (- len1 len2) p)))
+             (setq i (max 0 (1- p1) (- (+ j (- len1 len2)) p))
+                   i-end (min len1 (+ j p))))
+           (while (<=  i i-end)
+             (cond
+              ((= i 0)
+               (mset dist i j j))
+              ((= j 0)
+               (mset dist i j i))
+              (t
+               (mset dist i j
+                     (min
+                      (1+ (mref dist (1- i) j))
+                      (1+ (mref dist i (1- j)))
+                      (+ (mref dist (1- i) (1- j))
+                         (if (equal
+                              (elt seq1 (1- i))
+                              (elt seq2 (1- j)))
+                             0 1))
+                      (or (and allow-transposition
+                               (> i 1)
+                               (> j 1)
+                               (= (elt seq1 (- i 2))
+                                  (elt seq2 (- j 1)))
+                               (= (elt seq1 (- i 1))
+                                  (elt seq2 (- j 2)))
+                               (1+ (mref dist (- i 2) (- j 2))))
+                          infinity)))))
+             (if (<= (mref dist i j) k)
+                 (if (not ok-p)
+                     (setq ok-p t
+                           p1 i)
+                   (if (= i i-end)
+                       (setq p2 i)))
+               (if (not ok-p)
+                   (setq p1 (1+ i))
+                 (setq p2 (1- i))))
+             (setq i (1+ i)))
+           (setq j (1+ j)))
+
+         (when (<= (mref dist len1 len2) k)
+           (if score-only-p
+               (mref dist len1 len2)
+             (let ((i len1)
+                   (j len2)
+                   mapping)
+               (while (or (> i 0)
+                          (> j 0))
+                 (cond
+                  ((and (> i 0)
+                        (= (mref dist i j)
+                           (1+ (mref dist (1- i) j))))
+                   (cl-decf i)
+                   (push (cons (elt seq1 i) gap-symbol) mapping))
+                  ((and (> j 0)
+                        (= (mref dist i j)
+                           (1+ (mref dist i (1- j)))))
+                   (cl-decf j)
+                   (push (cons gap-symbol (elt seq2 j)) mapping))
+                  (t
+                   (cl-assert (and (> i 0) (> j 0)) t)
+                   (cl-decf i)
+                   (cl-decf j)
+                   (push (cons (elt seq1 i)
+                               (elt seq2 j)) mapping))))
+               (cons (mref dist len1 len2) mapping)))))))))
 
 (defun seq--drop-list (list n)
   "Return a list from LIST without its first N elements.
