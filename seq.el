@@ -400,7 +400,8 @@ position in the respective sequence in the alignment."
       (cl-loop for i from 1 to len1 do
         (cl-loop for j from 1 to len2 do
           (let ((max (max
-                      (+ (mref score (1- i) j) -1)
+                      (+ (mref score (1- i) j)
+                         gap-penalty)
                       (+ (mref score i (1- j))
                          (if (and prefix-p (= i len1))
                              0 gap-penalty))
