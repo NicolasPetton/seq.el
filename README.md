@@ -16,6 +16,9 @@ sequence as their first argument.
 
 All functions are tested in `test/seq-tests.el`
 
+*Note*: The version 2 of seq.el is maintained in the Emacs git
+repository, please consider sending patches there.
+
 ## Functions
 
 seq.el provides the following functions:
@@ -83,7 +86,6 @@ seq.el provides the following functions:
   list, vector or string.
 
 - `seq-reduce` function seq initial-value
-
   This function returns the result of calling `function` with
   `initial-value` and the first element of `seq`, then calling
   `function` with that result and the second element of `seq`,
@@ -95,14 +97,22 @@ seq.el provides the following functions:
   If `seq` is empty, `initial-value` is returned and
   `function` is not called.
 
-- `seq-some-p` pred seq
-  This function returns any element in `seq` for which calling
-  `pred` with that element returns non-nil.  If successively calling
-  `pred` with each element of `seq` always returns `nil`,
-  `nil` is returned.
+- `seq-some` pred seq
+  This function returns non-nil if calling `pred` with any element of
+  `seq` returns non-nil. If so, the returned value is the value
+  returned by `seq`.
 
   `pred` must be a one-argument function and `seq` may be a
   list, vector or string.
+
+- `seq-find` pred seq &optional default
+  This function returns the first element for which `pred` returns
+  non-nil in `seq`.  If no element matches `pref`, `default` is
+  returned.
+
+  Note that this function has an ambiguity if the found element is
+  identical to `default`, as it cannot be known if an element was
+  found or not.
 
 - `seq-every-p` pred seq
   This function returns non-nil if successively calling `pred` with
@@ -135,7 +145,7 @@ seq.el provides the following functions:
 
   The result is a sequence of the same type as SEQ.
 
-- `seq-contains-p` seq elt testfn
+- `seq-contains` seq elt testfn
   This function returns the first element in `seq` that equals to
   `elt`.
 
