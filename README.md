@@ -78,6 +78,14 @@ seq.el provides the following functions:
   `pred` must be a one-argument function and `seq` may be a
   list, vector or string.
 
+- `seq-map` function seq
+
+  This function returns the result of applying `function` to each
+  element of `seq`.  The returned value is a list.
+
+  `function` must be a one-argument function and `seq` may be a
+  list, vector or string.
+
 - `seq-remove` pred seq
   This function returns a list of all the elements in `seq` for
   which calling `pred` with that element returns `nil`.
