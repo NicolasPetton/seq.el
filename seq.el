@@ -4,7 +4,7 @@
 
 ;; Author: Nicolas Petton <nicolas@petton.fr>
 ;; Keywords: sequences
-;; Version: 1.10
+;; Version: 1.11
 ;; Package: seq
 
 ;; Maintainer: emacs-devel@gnu.org
@@ -223,7 +223,7 @@ Equality is defined by TESTFN if non-nil or by `equal' if nil."
                 (funcall (or testfn #'equal) elt e))
               seq))
 
-(cl-defgeneric seq-position (seq elt &optional testfn)
+(defun seq-position (seq elt &optional testfn)
   "Return the index of the first element in SEQ that is equal to ELT.
 Equality is defined by TESTFN if non-nil or by `equal' if nil."
   (let ((index 0))
