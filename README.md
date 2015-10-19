@@ -162,6 +162,12 @@ seq.el provides the following functions:
 
   `seq` may be a list, vector or string.
 
+- `seq-position` seq elt testfn
+  This function returns the index of the first element in `seq` that is equal to
+  `elt`.  Equality is defined by `testfn` if non-nil or by `equal` if nil."
+
+  `seq` may be a list, vector or string.
+
 - `seq-uniq` seq testfn
   This function returns a list of the elements of `seq` with
   duplicates removed.  `testfn` is used to compare elements, or
