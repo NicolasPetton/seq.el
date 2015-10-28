@@ -86,6 +86,14 @@ seq.el provides the following functions:
   `function` must be a one-argument function and `seq` may be a
   list, vector or string.
 
+- `seq-mapn` function &rest seqs
+
+  This function returns the result of applying `function` to each
+  element of all `seqs`.  The returned value is a list.
+
+  The arity of FUNCTION must match the number of SEQS, and the mapping
+  stops on the shortest sequence.
+
 - `seq-remove` pred seq
   This function returns a list of all the elements in `seq` for
   which calling `pred` with that element returns `nil`.

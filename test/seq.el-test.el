@@ -322,5 +322,18 @@ Evaluate BODY for each created sequence.
     (should (= (seq-position seq 'a #'eq) 0))
     (should (null (seq-position seq (make-symbol "a") #'eq)))))
 
+(ert-deftest test-seq-mapn ()
+  (should-error (seq-mapn #'identity))
+  (with-test-sequences (seq '(1 2 3 4 5 6 7))
+    (should (equal (append seq nil)
+                   (seq-mapn #'identity seq)))
+    (should (equal (seq-mapn #'1+ seq)
+                   (seq-map #'1+ seq)))
+
+    (with-test-sequences (seq-2 '(10 20 30 40 50))
+      (should (equal (seq-mapn #'+ seq seq-2)
+                     '(11 22 33 44 55)))
+      (should (equal (seq-mapn #'+ seq seq-2 nil) nil)))))
+
 (provide 'seq-tests)
 ;;; seq-tests.el ends here

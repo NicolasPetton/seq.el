@@ -4,7 +4,7 @@
 
 ;; Author: Nicolas Petton <nicolas@petton.fr>
 ;; Keywords: sequences
-;; Version: 1.11
+;; Version: 1.12
 ;; Package: seq
 
 ;; Maintainer: emacs-devel@gnu.org
@@ -281,6 +281,21 @@ TYPE must be one of following symbols: vector, string or list.
 The result is a sequence of type TYPE, or a list if TYPE is nil."
   (apply #'seq-concatenate (or type 'list)
          (seq-map function seq)))
+
+(defun seq-mapn (function sequence &rest seqs)
+  "Like `seq-map' but FUNCTION is mapped over all SEQS.
+The arity of FUNCTION must match the number of SEQS, and the
+mapping stops on the shortest sequence.
+Return a list of the results.
+
+\(fn FUNCTION SEQS...)"
+  (let ((result nil)
+        (seqs (seq-map (lambda (s) (seq-into s 'list))
+                       (cons sequence seqs))))
+    (while (not (memq nil seqs))
+      (push (apply function (seq-map #'car seqs)) result)
+      (setq seqs (seq-map #'cdr seqs)))
+    (nreverse result)))
 
 (defun seq-partition (seq n)
   "Return a list of the elements of SEQ grouped into sub-sequences of length N.
