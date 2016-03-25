@@ -22,7 +22,7 @@
 
 ;;; Commentary:
 
-;; Tests for sequences.el
+;; Tests for seq.el
 
 ;;; Code:
 
@@ -91,6 +91,16 @@ Evaluate BODY for each created sequence.
     (should (equal (seq-take-while #'numberp seq) seq)))
   (with-test-sequences (seq '())
     (should (seq-empty-p (seq-take-while #'test-sequences-oddp seq)))))
+
+(ert-deftest test-seq-map-indexed ()
+  (should (equal (seq-map-indexed (lambda (elt i)
+                                    (list elt i))
+                                  nil)
+                 nil))
+  (should (equal (seq-map-indexed (lambda (elt i)
+                                    (list elt i))
+                                  '(a b c d))
+                 '((a 0) (b 1) (c 2) (d 3)))))
 
 (ert-deftest test-seq-filter ()
   (with-test-sequences (seq '(6 7 8 9 10))
