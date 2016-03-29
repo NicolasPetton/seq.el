@@ -202,6 +202,16 @@ The result is a sequence of the same type as SEQUENCE."
     (let ((result (seq-sort predicate (append sequence nil))))
       (seq-into result (type-of sequence)))))
 
+(defun seq-sort-by (function pred sequence)
+  "Sort SEQUENCE using PRED as a comparison function.
+Elements of SEQUENCE are transformed by FUNCTION before being
+sorted.  FUNCTION must be a function of one argument."
+  (seq-sort (lambda (a b)
+              (funcall pred
+                       (funcall function a)
+                       (funcall function b)))
+            sequence))
+
 (defun seq-contains (sequence elt &optional testfn)
   "Return the first element in SEQUENCE that equals to ELT.
 Equality is defined by TESTFN if non-nil or by `equal' if nil."

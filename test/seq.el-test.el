@@ -345,5 +345,10 @@ Evaluate BODY for each created sequence.
                      '(11 22 33 44 55)))
       (should (equal (seq-mapn #'+ seq seq-2 nil) nil)))))
 
+(ert-deftest test-seq-sort-by ()
+  (let ((seq ["x" "xx" "xxx"]))
+    (should (equal (seq-sort-by #'seq-length #'> seq)
+                   ["xxx" "xx" "x"]))))
+
 (provide 'seq-tests)
 ;;; seq-tests.el ends here
