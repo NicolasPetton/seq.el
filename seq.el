@@ -4,7 +4,7 @@
 
 ;; Author: Nicolas Petton <nicolas@petton.fr>
 ;; Keywords: sequences
-;; Version: 2.14
+;; Version: 2.15
 ;; Package: seq
 
 ;; Maintainer: emacs-devel@gnu.org

@@ -61,7 +61,7 @@
 (seq--when-emacs-25-p
 
 (require 'cl-generic)
-(require 'cl-extra) ;; for cl-subseq
+(require 'cl-lib) ;; for cl-subseq
 
 (defmacro seq-doseq (spec &rest body)
   "Loop over a sequence.
