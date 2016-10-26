@@ -1,5 +1,11 @@
 # seq.el [![Build Status](https://secure.travis-ci.org/NicolasPetton/seq.el.png)](http://travis-ci.org/NicolasPetton/seq.el)
 
+## Note: Package now in Emacs & Elpa
+
+This package is now both in Emacs 25.1 and [ELPA](https://elpa.gnu.org/).  Further development will only happen there.
+
+**Do not send pull requests or open issues here (use `M-x report-emacs-bug` instead).**
+
 ## Summary
 
 seq.el provides Sequence manipulation functions that complement basic
